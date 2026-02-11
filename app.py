@@ -27,7 +27,7 @@ gallery_col = db["gallery"]
 # ==============================
 cloudinary.config(
     cloud_name=os.getenv("dzlncwjiy"),
-    api_key=os.getenv(842461542836876),
+    api_key=os.getenv("842461542836876"),
     api_secret=os.getenv("cOn5Y5M9KyzHE-2H-VFXb-YzlDI")
 )
 
