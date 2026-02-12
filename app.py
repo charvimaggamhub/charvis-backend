@@ -112,7 +112,6 @@ def update_status():
         return jsonify({"message": "Unauthorized"}), 403
 
     data = request.json
-
     bookings_col.update_one(
         {"booking_id": data["booking_id"]},
         {"$set": {"status": data["status"]}}
@@ -130,15 +129,12 @@ def upload_image():
         return jsonify({"message": "Unauthorized"}), 403
 
     if "image" not in request.files:
-        return jsonify({"success": False, "message": "No file"}), 400
+        return jsonify({"message": "No image"}), 400
 
     image = request.files["image"]
 
     try:
-        upload = cloudinary.uploader.upload(
-            image,
-            folder="charvi_gallery"
-        )
+        upload = cloudinary.uploader.upload(image, folder="charvi_gallery")
 
         gallery_col.insert_one({
             "url": upload["secure_url"],
@@ -149,7 +145,7 @@ def upload_image():
 
     except Exception as e:
         print("Upload Error:", e)
-        return jsonify({"success": False, "message": str(e)}), 500
+        return jsonify({"success": False}), 500
 
 # ==============================
 # GET GALLERY
@@ -176,116 +172,16 @@ def delete_image():
     return jsonify({"success": True})
 
 # ==============================
-# CREATE BOOKING (USER)
+# HOME
 # ==============================
-@app.route("/booking", methods=["POST"])
-def create_booking():
-    data = request.json
 
-    booking = {
-        "booking_id": "CMH-" + uuid.uuid4().hex[:6].upper(),
-        "name": data["name"],
-        "phone": data["phone"],
-        "service": data["service"],
-        "amount": data["amount"],
-        "status": "Pending",
-        "created_at": datetime.now().strftime("%Y-%m-%d %H:%M")
-    }
-
-    bookings_col.insert_one(booking)
-
-    return jsonify({
-        "success": True,
-        "booking_id": booking["booking_id"]
-    })
-
-# ==============================
-# ADMIN – GET BOOKINGS
-# ==============================
-@app.route("/admin/bookings", methods=["GET"])
-def get_bookings():
-    if not check_admin(request):
-        return jsonify({"message": "Unauthorized"}), 403
-
-    return jsonify(list(bookings_col.find({}, {"_id": 0})))
-
-# ==============================
-# ADMIN – UPDATE STATUS
-# ==============================
-@app.route("/admin/update-status", methods=["PUT"])
-def update_status():
-    if not check_admin(request):
-        return jsonify({"message": "Unauthorized"}), 403
-
-    data = request.json
-    bookings_col.update_one(
-        {"booking_id": data["booking_id"]},
-        {"$set": {"status": data["status"]}}
-    )
-    return jsonify({"success": True})
-
-# ==============================
-# ADMIN – UPLOAD IMAGE
-# ==============================
-@app.route("/admin/upload-image", methods=["POST"])
-def upload_image():
-    print("📩 Upload request received")
-
-    print("Auth header:", request.headers.get("Authorization"))
-    print("Admin token:", ADMIN_TOKEN)
-
-    if not check_admin(request):
-        print("❌ Unauthorized")
-        return jsonify({"message": "Unauthorized"}), 403
-
-    if "image" not in request.files:
-        print("❌ No image in request.files")
-        return jsonify({"message": "No image"}), 400
-
-    image = request.files["image"]
-    print("✅ Image filename:", image.filename)
-
-    upload = cloudinary.uploader.upload(image, folder="charvi_gallery")
-    print("✅ Uploaded to Cloudinary")
-
-    gallery_col.insert_one({
-        "url": upload["secure_url"],
-        "public_id": upload["public_id"]
-    })
-
-    print("✅ Saved to MongoDB")
-
-    return jsonify({"success": True})
-
-
-# ==============================
-# GET GALLERY (PUBLIC)
-# ==============================
-@app.route("/gallery", methods=["GET"])
-def get_gallery():
-    return jsonify(list(gallery_col.find({}, {"_id": 0})))
-
-# ==============================
-# ADMIN – DELETE IMAGE
-# ==============================
-@app.route("/admin/delete-image", methods=["DELETE"])
-def delete_image():
-    if not check_admin(request):
-        return jsonify({"message": "Unauthorized"}), 403
-
-    data = request.json
-    cloudinary.uploader.destroy(data["public_id"])
-    gallery_col.delete_one({"url": data["url"]})
-
-    return jsonify({"success": True})
-
-# ==============================
-# HOME TEST
-# ==============================
 @app.route("/")
 def home():
     return "Backend running successfully 🚀"
 
+# ==============================
+# RUN FOR RENDER
+# ==============================
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
