@@ -43,28 +43,11 @@ cloudinary.config(
 )
 
 # ==============================
-# SIMPLE ADMIN TOKEN
+# SIMPLE ADMIN CHECK (NO TOKEN)
 # ==============================
-
-ADMIN_TOKEN = None
 
 def check_admin(req):
-    return req.headers.get("Authorization") == ADMIN_TOKEN
-
-# ==============================
-# ADMIN LOGIN
-# ==============================
-
-@app.route("/admin/login", methods=["POST"])
-def admin_login():
-    global ADMIN_TOKEN
-    data = request.json
-
-    if data.get("password") == ADMIN_PASSWORD:
-        ADMIN_TOKEN = str(uuid.uuid4())
-        return jsonify({"success": True, "token": ADMIN_TOKEN})
-
-    return jsonify({"success": False}), 401
+    return req.headers.get("Authorization") == ADMIN_PASSWORD
 
 # ==============================
 # CREATE BOOKING
@@ -112,6 +95,7 @@ def update_status():
         return jsonify({"message": "Unauthorized"}), 403
 
     data = request.json
+
     bookings_col.update_one(
         {"booking_id": data["booking_id"]},
         {"$set": {"status": data["status"]}}
@@ -134,7 +118,10 @@ def upload_image():
     image = request.files["image"]
 
     try:
-        upload = cloudinary.uploader.upload(image, folder="charvi_gallery")
+        upload = cloudinary.uploader.upload(
+            image,
+            folder="charvi_gallery"
+        )
 
         gallery_col.insert_one({
             "url": upload["secure_url"],
