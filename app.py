@@ -17,7 +17,7 @@ CORS(app)
 # ==============================
 # MongoDB
 # ==============================
-client = MongoClient(os.getenv("mongodb+srv://admin:charvi123@charvimaggamhub.1xewhgy.mongodb.net/?appName=charvimaggamhub"))
+client = MongoClient(os.getenv("MONGO_URI"))
 db = client["charvi_maggam_hub"]
 bookings_col = db["bookings"]
 gallery_col = db["gallery"]
@@ -26,15 +26,16 @@ gallery_col = db["gallery"]
 # Cloudinary (CORRECT)
 # ==============================
 cloudinary.config(
-    cloud_name=os.getenv("dzlncwjiy"),
-    api_key=os.getenv("842461542836876"),
-    api_secret=os.getenv("cOn5Y5M9KyzHE-2H-VFXb-YzlDI")
+    cloud_name=os.getenv("CLOUD_NAME"),
+    api_key=os.getenv("API_KEY"),
+    api_secret=os.getenv("API_SECRET")
 )
+
 
 # ==============================
 # Admin Auth (Simple Token)
 # ==============================
-ADMIN_PASSWORD = os.getenv("charvi123")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
 ADMIN_TOKEN = None
 
 def check_admin(req):
